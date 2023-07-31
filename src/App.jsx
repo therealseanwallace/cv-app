@@ -19,6 +19,37 @@ function App() {
   const [currentDateWorkEnded, setCurrentDateWorkEnded] = useState("");
   const [currentWorkDescription, setCurrentWorkDescription] = useState("");
   const [workExperience, setWorkExperience] = useState([]);
+  const [eduSubmitted, setEduSubmitted] = useState(false);
+  const [workSubmitted, setWorkSubmitted] = useState(false);
+  const [personalSubmitted, setPersonalSubmitted] = useState(false);
+
+  function editPersonalInfo(e) {
+    e.preventDefault();
+    setName(personalInfo.name);
+    setEmail(personalInfo.email);
+    setPhoneNumber(personalInfo.phoneNumber);
+  }
+
+  function removeEduEntry(index) {
+    console.log(
+      "removeEduEntry! index is",
+      index,
+      "education.length is",
+      education.length
+    );
+    setEducation(education.filter((_, i) => i !== index));
+    console.log("education.length is now", education.length);
+    if (education.length - 1 === 0) {
+      setEduSubmitted(false);
+    }
+  }
+
+  function removeWorkEntry(index) {
+    setWorkExperience(workExperience.filter((_, i) => i !== index));
+    if (workExperience.length - 1 === 0) {
+      setWorkSubmitted(false);
+    }
+  }
 
   function compileAndSubmitPersonalInfo(e) {
     e.preventDefault();
@@ -28,6 +59,10 @@ function App() {
     newPersonalInfo.phoneNumber = phoneNumber;
     newPersonalInfo.submitted = true;
     setPersonalInfo(newPersonalInfo);
+    setName("");
+    setEmail("");
+    setPhoneNumber("");
+    setPersonalSubmitted(true);
   }
 
   function compileAndSubmitEducationEntry(e) {
@@ -42,6 +77,7 @@ function App() {
     setCurrentDateEducationStarted("");
     setCurrentDateEducationEnded("");
     setCurrentQualificationAchieved("");
+    setEduSubmitted(true);
   }
 
   function compileAndSubmitWorkExperience(e) {
@@ -56,7 +92,9 @@ function App() {
     setCurrentDateWorkStarted("");
     setCurrentDateWorkEnded("");
     setCurrentWorkDescription("");
+    setWorkSubmitted(true);
   }
+
   return (
     <>
       <div className="inputs">
@@ -157,9 +195,7 @@ function App() {
               onChange={(e) => setCurrentDateWorkEnded(e.target.value)}
               required
             />
-            <label htmlFor="workDescription">
-              Description
-            </label>
+            <label htmlFor="workDescription">Description</label>
             <textarea
               id="workDescription"
               value={currentWorkDescription}
@@ -174,31 +210,65 @@ function App() {
       </div>
       <div className="output">
         <h2>Your CV</h2>
-        <div className="personalInfo">
-          <p>🧑 {personalInfo.name}</p>
-          <p>📧 {personalInfo.email}</p>
-          <p>📞 {personalInfo.phoneNumber}</p>
-          <p>(edit)</p>
-        </div>
-        <div className="workHistory">
-          <h3>Work experience</h3>
-          {workExperience.map((workItem, index) => (
-            <div key={index}>
-              <p>{workItem.employer} | {workItem.dateStarted} - {workItem.dateEnded} </p>
-              <p className="desc">{workItem.description}</p>
+
+        {
+          // Check if personal details are submitted and, if so, render them
+          personalSubmitted ? (
+            <div className="personalInfo">
+              <p>🧑 {personalInfo.name}</p>
+              <p>📧 {personalInfo.email}</p>
+              <p>📞 {personalInfo.phoneNumber}</p>
+              <button onClick={editPersonalInfo}>edit</button>
             </div>
-          ))}
-        </div>
-        <div className="education">
-          <h3>Education</h3>
-          {education.map((educationItem, index) => (
-            <div key={index}>
-              <p>{educationItem.institution} | {educationItem.dateStarted} - {educationItem.dateEnded}</p>
-              <p className="qual">Qualification(s) achieved: <span>{educationItem.qualAchieved}</span></p>
+          ) : null
+        }
+
+        {
+          // Check if at least one work history entry has been submitted,
+          // and, if so, render the work history
+          workSubmitted ? (
+            <div className="workHistory">
+              <h3>Work experience</h3>
+              {workExperience.map((workItem, index) => (
+                <div key={index}>
+                  <p>
+                    {workItem.employer} | {workItem.dateStarted} -{" "}
+                    {workItem.dateEnded}{" "}
+                  </p>
+                  <p className="desc">{workItem.description}</p>
+                  <button onClick={() => removeWorkEntry(index)}>
+                    Remove entry
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        
+          ) : null
+        }
+
+        {
+          // Check if at least one education entry has been submitted,
+          // and, if so, render the education history
+          eduSubmitted ? (
+            <div className="education">
+              <h3>Education</h3>
+              {education.map((educationItem, index) => (
+                <div key={index}>
+                  <p>
+                    {educationItem.institution} | {educationItem.dateStarted} -{" "}
+                    {educationItem.dateEnded}
+                  </p>
+                  <p className="qual">
+                    Qualification(s) achieved:{" "}
+                    <span>{educationItem.qualAchieved}</span>
+                  </p>
+                  <button onClick={() => removeEduEntry(index)}>
+                    Remove entry
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null
+        }
       </div>
     </>
   );
